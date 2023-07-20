@@ -1,14 +1,27 @@
+import { Outlet } from 'react-router-dom';
 import './App.css';
 import Header from './components/Header';
 import NavBar from './components/NavBar';
+import AppRouter from './routes/AppRouter';
+import { Grid } from '@mui/material';
 
 function App() {
   return (
-    <div className="App">
-      <Header />
-      <NavBar />
-      {/* O resto do seu app vai aqui */}
-    </div>
+    <>
+      <Grid container>
+          <NavBar />
+        <Grid item xs={10}>
+          <Grid container direction="column">
+            <Grid item>
+              <Header />
+            </Grid>
+            <Grid item xs>
+              <AppRouter />
+            </Grid>
+          </Grid>
+        </Grid>
+      </Grid>
+    </>
   );
 }
 

@@ -1,10 +1,15 @@
 import React from 'react';
+import { AppBar, Toolbar, Typography } from '@mui/material';
 
 const Header = () => {
     return (
-        <header>
-            <h1>Meu Projeto React</h1>
-        </header>
+        <AppBar position="static">
+            <Toolbar>
+                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                    Murabei Library
+                </Typography>
+            </Toolbar>
+        </AppBar>
     );
 };
 

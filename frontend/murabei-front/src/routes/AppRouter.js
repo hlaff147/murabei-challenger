@@ -10,6 +10,7 @@ function AppRouter() {
             <Routes>
                 <Route path="/" element={<Book />} />
                 <Route path="/author" element={<Author />} />
+                <Route path="/book" element={<Book />} />
             </Routes>
         </>
 

@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from quickstart.models import Author, Book
+from quickstart.models import Author, Book, Subjects
 
 
 # Create your tests here.
@@ -42,3 +42,15 @@ class BookModelTest(TestCase):
         book = Book.objects.get(id=1)
         field_label = book._meta.get_field('author').verbose_name
         self.assertEquals(field_label, 'author')
+
+
+class SubjectModelTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        Subjects.objects.create(description='Test Subject')
+
+    def test_description_label(self):
+        subject = Subjects.objects.get(id=1)
+        field_label = subject._meta.get_field('description').verbose_name
+        self.assertEquals(field_label, 'description')

@@ -19,8 +19,10 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from quickstart.urls import books_url, author_url, subject_url, user_url
+from quickstart.views import LoginViewSet
 
 urlpatterns = [
+    path('login/', LoginViewSet.as_view({'post': 'create'}), name='login'),
     path('admin/', admin.site.urls),
     path('book/', include(books_url)),
     path('author/', include(author_url)),

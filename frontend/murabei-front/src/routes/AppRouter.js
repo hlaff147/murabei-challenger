@@ -7,17 +7,19 @@ import Login from '../components/Login';
 import LoginScreen from '../components/LoginScreen';
 import Subject from '../components/Subject';
 
-function AppRouter() {
+function ProtectedRoute({ children }) {
     const { isAuthenticated } = useContext(AuthContext);
+    return isAuthenticated ? children : <LoginScreen />;
+}
 
+function AppRouter() {
     return (
         <Routes>
             <Route path="/" element={<LoginScreen />} />
-            <Route path="/author" element={isAuthenticated ? <Author /> : <LoginScreen />} />
-            <Route path="/book" element={isAuthenticated ? <Book /> : <LoginScreen />} />
-            <Route path="/subject" element={isAuthenticated ? <Subject /> : <LoginScreen />} />
+            <Route path="/author" element={<ProtectedRoute><Author /></ProtectedRoute>} />
+            <Route path="/book" element={<ProtectedRoute><Book /></ProtectedRoute>} />
+            <Route path="/subject" element={<ProtectedRoute><Subject /></ProtectedRoute>} />
         </Routes>
-
     );
 }
 

@@ -1,6 +1,7 @@
 import { NotificationManager } from "react-notifications";
+import { API_BASE_URL } from '../apiConfig';
 
-const API_BASE_URL = 'http://localhost:8000';
+
 export function loginApi(credentials) {
     return fetch(`${API_BASE_URL}/login/`, {
       method: 'POST',

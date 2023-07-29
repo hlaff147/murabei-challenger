@@ -1,19 +1,24 @@
-// components/Book.js
-import React, { useEffect, useState } from 'react';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  Pagination,
+} from '@mui/material';
 import { deleteBookApi, fetchBook } from '../api/book/bookApi';
-import { Button, makeStyles } from '@material-ui/core';
 import EditBook from './EditBook';
 import DeleteBook from './dialog/DeleteBook';
+import AddBook from './AddBook';
+import { createStyles, makeStyles } from '@mui/styles';
 
-function Book() {
-  const useStyles = makeStyles({
+
+const useStyles = makeStyles((theme) =>
+  createStyles({
     table: {
       minWidth: 650,
     },
@@ -21,58 +26,55 @@ function Book() {
       display: 'flex',
       gap: '5px',
     }
-  });
+  })
+);
+
+const ITEMS_PER_PAGE = 5;
+
+function Book() {
   const classes = useStyles();
-
   const [books, setBooks] = useState([]);
-  const handleClickOpen = (book) => {
-    setSelectedBook(book);
-    setOpen(true);
-  };
-  const [open, setOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const [bookToDelete, setBookToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [openEditBook, setOpenEditBook] = useState(false);
+  const [openDeleteBook, setOpenDeleteBook] = useState(false);
+  const [openAddBook, setOpenAddBook] = useState(false);
 
-  const handleDeleteOpen = (book) => {
-    setBookToDelete(book);
-    setDeleteOpen(true);
-  };
-
-  const handleDeleteClose = () => {
-    setDeleteOpen(false);
-  };
-
-  const deleteBook = (bookId) => {
-    deleteBookApi(bookId).then(() => {
-      // Atualiza a lista de livros após a deleção
-      fetchBook().then(setBooks);
-      handleDeleteClose();
-    });
-  };
-
-  useEffect(() => {
+  const fetchBooks = useCallback(() => {
     fetchBook().then(setBooks);
   }, []);
-  const fetchBooks = () => {
-    fetchBook().then(setBooks);
-  }
+
+  const deleteBook = useCallback((bookId) => {
+    deleteBookApi(bookId).then(fetchBooks);
+    setOpenDeleteBook(false);
+  }, [fetchBooks]);
+
+  const handleEditBookOpen = useCallback((book) => {
+    setSelectedBook(book);
+    setOpenEditBook(true);
+  }, []);
+
+  const handleDeleteBookOpen = useCallback((book) => {
+    setBookToDelete(book);
+    setOpenDeleteBook(true);
+  }, []);
+
+  const handleAddBookOpen = () => setOpenAddBook(true);
+
+  const handleModalClose = () => {
+    setOpenEditBook(false);
+    setOpenDeleteBook(false);
+    setOpenAddBook(false);
+    setSelectedBook(null);
+    setBookToDelete(null);
+  };
+
+  const handlePageChange = (_, newPage) => setCurrentPage(newPage);
 
   useEffect(() => {
     fetchBooks();
-  }, []);
-
-  useEffect(() => {
-    if (!open) {
-      fetchBooks();
-    }
-  }, [open]);
-
+  }, [fetchBooks]);
 
   return (
     <TableContainer component={Paper}>
@@ -86,37 +88,49 @@ function Book() {
             <TableCell>Author Age</TableCell>
             <TableCell>Subjects</TableCell>
             <TableCell>Actions</TableCell>
+            <TableCell>
+              <Button variant="contained" color="primary" onClick={handleAddBookOpen}>
+                Add Book
+              </Button>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {books.map((book) => (
-            <TableRow
-              key={book.name}
-              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-            >
-              <TableCell component="th" scope="row">
-                {book.id}
-              </TableCell>
-              <TableCell>{book.name}</TableCell>
-              <TableCell>{book.author.name}</TableCell>
-              <TableCell>{book.author.email}</TableCell>
-              <TableCell>{book.author.age}</TableCell>
-              <TableCell>{book.subjects.map((subject) => subject.description).join(', ')}</TableCell>
-              <TableCell className={classes.columnActions}>
-                <Button variant="contained" color="primary" onClick={() => handleClickOpen(book)}>
-                  Edit
-                </Button>
-                <Button variant="contained" color="secondary" onClick={() => handleDeleteOpen(book)}>
-                  Delete
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
+          {books
+            .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+            .map((book) => (
+              <TableRow
+                key={book.name}
+                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+              >
+                <TableCell component="th" scope="row">
+                  {book.id}
+                </TableCell>
+                <TableCell>{book.name}</TableCell>
+                <TableCell>{book.author.name}</TableCell>
+                <TableCell>{book.author.email}</TableCell>
+                <TableCell>{book.author.age}</TableCell>
+                <TableCell>{book.subjects.map((subject) => subject.description).join(', ')}</TableCell>
+                <TableCell className={classes.columnActions}>
+                  <Button variant="contained" color="primary" onClick={() => handleEditBookOpen(book)}>
+                    Edit
+                  </Button>
+                  <Button variant="contained" color="secondary" onClick={() => handleDeleteBookOpen(book)}>
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
-      <EditBook open={open} handleClose={handleClose} book={selectedBook} fetchBook={fetchBook} />
-      <DeleteBook open={deleteOpen} handleClose={handleDeleteClose} book={bookToDelete} handleDelete={deleteBook} />
-
+      <EditBook open={openEditBook} handleClose={handleModalClose} book={selectedBook} fetchBook={fetchBooks}/>
+      <DeleteBook open={openDeleteBook} handleClose={handleModalClose} book={bookToDelete} handleDelete={deleteBook} />
+      <AddBook open={openAddBook} handleClose={handleModalClose} fetchBooks={fetchBooks} />
+      <Pagination
+        count={Math.ceil(books.length / ITEMS_PER_PAGE)}
+        page={currentPage}
+        onChange={handlePageChange}
+      />
     </TableContainer>
   );
 }
